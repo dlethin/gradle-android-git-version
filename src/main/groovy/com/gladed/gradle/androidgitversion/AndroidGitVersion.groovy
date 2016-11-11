@@ -77,8 +77,25 @@ class AndroidGitVersionExtension {
     private Project project
     private Results results
 
+    private Closure nameOverrideClosure
+    private Closure codeOverrideClosure
+
     AndroidGitVersionExtension(Project project) {
         this.project = project
+    }
+
+    /**
+     * Provides a hook to override the computed version name
+     */
+    void overrideName(Closure closure) {
+        nameOverrideClosure = closure
+    }
+
+    /**
+     * Provides a hook to override the computed version code
+     */
+    void overrideCode(Closure closure) {
+        codeOverrideClosure = closure
     }
 
     /**
@@ -111,6 +128,10 @@ class AndroidGitVersionExtension {
         }
         name = name.replaceAll(/%[^%]+%/,'')
 
+        if (nameOverrideClosure) {
+            name = nameOverrideClosure.call( name, results)
+        }
+
         return name
     }
 
@@ -125,7 +146,13 @@ class AndroidGitVersionExtension {
                 split(/[^0-9]+/) + empties).
                 collect{ it as int }[0..<parts]
 
-        return baseCode + versionParts.inject(0) { result, i -> result * multiplier + i.toInteger() };
+        int code = baseCode + versionParts.inject(0) { result, i -> result * multiplier + i.toInteger() };
+
+        if (codeOverrideClosure) {
+            code = codeOverrideClosure.call( code, results)
+        }
+
+        return code
     }
 
     /** Flush results in case git content changed */

@@ -213,6 +213,43 @@ class AndroidGitVersionTest extends GroovyTestCase {
         assert plugin.name() ==~ '1.0-1-[a-f0-9]{7}-feature'
     }
 
+    void testCodeOverride() {
+        addCommit()
+        addTag("1.1")
+
+        plugin.overrideCode { code, results ->
+
+            // This is just a theoretical example for testing
+            assertEquals(1001000, code)
+            assertEquals("1.1", results.lastVersion)
+            assertEquals("master", results.branchName)
+ 
+            return 0
+        }
+
+        assertEquals(0, plugin.code())
+    }
+
+    void testNameOverride() {
+        addCommit()
+        addTag("1.0")
+        addBranch("developer")
+        addCommit()
+
+        plugin.overrideName { name, results ->
+
+            // This is just a theoretical example for testing
+            assert name.startsWith("1.0-1-")
+            assert name.endsWith('-developer')
+
+            assertEquals("developer", results.branchName)
+
+            return name.replace("developer", "next")
+        }
+        
+        assert plugin.name().endsWith('-next')
+    }
+
     void testBaseCode() {
         addCommit()
         addTag("1.1")

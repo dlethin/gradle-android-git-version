@@ -83,6 +83,26 @@ androidGitVersion {
     baseCode 2000
     hideBranches = [ 'develop' ]
     format = '%tag%%.count%%<commit>%%-branch%%...dirty%'
+
+    overrideName { name, data ->
+
+        // name (String) - proposed name
+        // data (Object) - info used to derived proposed name:
+
+        //   revCount (int)        - Number of commits since last relevant tag 
+        //   commitPrefix (String) - Prefix hash for the current commit
+        //   branchName (String)   - Branch name for the current commit
+        //   dirty (boolean)       - If there are uncommitted changes
+        //   lastVersion (String)  - Most recent version seen
+    }
+
+    overrideCode { code, data ->
+
+        // code - proposed name
+        // data - info used to derived proposed name:
+
+        // (see description in overrideName method above)
+    }
 }
 ```
 
@@ -146,6 +166,14 @@ Note that each element of hideBranches is interpreted as a regex, for example, `
 Parts include `tag` (the last tag), `count` (number of commits, if any, since last tag), `commit` (most recent commit prefix, if any, since the last tag), `branch` (branch name, if current branch is not in `hideBranches`), and `dirty` (inserting the word "dirty" if the build was made with uncommitted changes).
 
 Parts are delimited as `%PARTNAME%`. Other characters appearing between % marks are preserved. Parts may be omitted in which case they will not appear in the version name.
+
+### overrideName (Closure)
+`overrideName` allows you provide a hook/closure to override the proposed
+name, giving you access to the same data it was derived from.
+
+### overrideCode (Closure)
+`overrideCode` allows you provide a hook/closure to override the proposed
+code, giving you access to the same data it was derived from.
 
 ## License
 

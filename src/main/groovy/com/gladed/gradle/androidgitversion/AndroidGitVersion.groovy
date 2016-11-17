@@ -120,7 +120,7 @@ class AndroidGitVersionExtension {
         if (name.equals("unknown")) return name
         name = this.format
 
-        def parts = [tag: results.lastVersion]
+        def parts = [tag: nextVersionStrategy.call(results)]
         if (results.revCount > 0) {
             parts['count'] = results.revCount
             parts['commit'] = results.commitPrefix

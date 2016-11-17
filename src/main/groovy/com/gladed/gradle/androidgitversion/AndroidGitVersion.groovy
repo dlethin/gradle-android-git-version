@@ -80,8 +80,17 @@ class AndroidGitVersionExtension {
     private Closure nameOverrideClosure
     private Closure codeOverrideClosure
 
+    // default behavior is to just return back lastVersion
+    private Closure nextVersionStrategy = { data ->
+        data.lastVersion
+    }
+
     AndroidGitVersionExtension(Project project) {
         this.project = project
+    }
+
+    void nextVersionStrategy(Closure closure) {
+        this.nextVersionStrategy = closure
     }
 
     /**
@@ -105,7 +114,8 @@ class AndroidGitVersionExtension {
     final String name() {
         if (!results) results = scan();
 
-        String name = results.lastVersion
+        //String name = results.lastVersion
+        String name = nextVersionStrategy.call(results)
 
         if (name.equals("unknown")) return name
         name = this.format
@@ -142,7 +152,9 @@ class AndroidGitVersionExtension {
         if (!results) results = scan();
         List<String> empties = (1..parts).collect { "0" }
 
-        def versionParts = (!results.lastVersion ? empties : results.lastVersion.
+        def nextVersion = nextVersionStrategy.call(results)
+
+        def versionParts = (!nextVersion ? empties : nextVersion.
                 split(/[^0-9]+/) + empties).
                 collect{ it as int }[0..<parts]
 
